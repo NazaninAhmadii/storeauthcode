@@ -5,7 +5,7 @@ app.use(express())
 
 app.post('/', function (request, response) {
   console.log('POST /')
-  console.log('the request to Post is: ', request.data)
+  console.log('the request to Post is: ', request)
 })
 
 port = 3000
