@@ -7,59 +7,48 @@ app.post('/', function (request, response) {
   console.log('POST /')
   console.log('the request to Post is: ', response)
 
-  // (Receive authCode via HTTPS POST)
+  let client_id =
+    '563724994731-iet2ujk56l5vp1v3kg7tea54ilq35r8g.apps.googleusercontent.com'
+  let googleauth = [
+    `https://accounts.google.com/o/oauth2/v2/auth?client_id=${client_id}`,
+    `redirect_uri=https://zahmadi.wmdd4950.com/authcode`,
+    `response_type=code&scope=openid profile email`,
+  ].join('&')
 
-  if (request.getHeader('X-Requested-With') == null) {
-    // Without the `X-Requested-With` header, this request could be forged. Aborts.
-    console.log('No X requested with!')
-  }
+  console.log('got a token')
+  var matches = googleauth.match(/(.*)\#access_token\=(.*?)\&/)
+  var app_url = matches[1]
+  var token = matches[2]
 
-  // Set path to the Web application client_secret_*.json file you downloaded from the
-  // Google API Console: https://console.developers.google.com/apis/credentials
-  // You can also find your Web application client ID and client secret from the
-  // console and specify them directly when you create the GoogleAuthorizationCodeTokenRequest
-  // object.
-  let CLIENT_SECRET_FILE = '/path/to/client_secret.json'
+  console.log('the token! ', token)
 
-  // Exchange auth code for access token
-  let clientSecrets = GoogleClientSecrets.load(
-    JacksonFactory.getDefaultInstance(),
-    new FileReader(CLIENT_SECRET_FILE)
-  )
-  let tokenResponse = new GoogleAuthorizationCodeTokenRequest(
-    new NetHttpTransport(),
-    JacksonFactory.getDefaultInstance(),
-    'https://oauth2.googleapis.com/token',
-    clientSecrets.getDetails().getClientId(),
-    clientSecrets.getDetails().getClientSecret(),
-    authCode,
-    REDIRECT_URI
-  ) // Specify the same redirect URI that you use with your web
-    // app. If you don't have a web version of your app, you can
-    // specify an empty string.
-    .execute()
+  // - Step 3 -
+  // Now that we have a token, we can make API calls to facebook.
+  // Here we simply retrieve the user's name, email, and profile pic
+  // to confirm the user's identity
+  //   fetch(`https://www.googleapis.com/userinfo/v2/me`, {
+  //     // IMPORTANT:  You must include the token in the Authroization header
+  //     //             Otherwise how can facebook know who is calling?
+  //     headers: {
+  //       Authorization: `Bearer ${token}`,
+  //     },
+  //   })
+  //     .then(function (response) {
+  //       // Extra error check, if we get an invalid response, it means that
+  //       // our token is invalid.  We will restart the login flow by
+  //       // clearing the access_token
 
-  let accessToken = tokenResponse.getAccessToken()
-  console.log('the access token: ', accessToken)
-  // Use access token to call API
-  //   let credential = new GoogleCredential().setAccessToken(accessToken);
-  //   let drive =
-  //       new Drive.Builder(new NetHttpTransport(), JacksonFactory.getDefaultInstance(), credential)
-  //           .setApplicationName("Auth Code Exchange Demo")
-  //           .build();
-  //   let file = drive.files().get("appfolder").execute();
+  //       return response.json()
+  //     })
+  //     .then((res) => {
+  //       let userinfo = document.createElement("h2")
+  //       userinfo.innerText = `Hello ${res.name}`
+  //       document.body.append(userinfo)
 
-  //   // Get profile info from ID token
-  //   let idToken = tokenResponse.parseIdToken();
-  //   let payload = idToken.getPayload();
-  //   let userId = payload.getSubject();  // Use this value as a key to identify a user.
-  //   let email = payload.getEmail();
-  //   let emailVerified = Boolean.valueOf(payload.getEmailVerified());
-  //   let name = (String) payload.get("name");
-  //   let pictureUrl = (String) payload.get("picture");
-  //   String locale = (String) payload.get("locale");
-  //   String familyName = (String) payload.get("family_name");
-  //   String givenName = (String) payload.get("given_name");
+  //       let userpic = document.createElement("img")
+  //       userpic.src = res.picture
+  //       document.body.append(userpic)
+  //     })
 })
 
 port = 3000
